@@ -4,8 +4,8 @@ import mysql.connector as mariadb
 def main():
 
     mariadb_connection, cursor = connect('root', 'Buchwa1dr0ck5', 'test1')
-    # search_empty_smile(cursor, 'limit 10')
-    search_empty_smile(cursor)
+    search_empty_smile(cursor, 'limit 10')
+    # search_empty_smile(cursor)
     mariadb_connection.close()
 
 def connect(username, pw, database):
