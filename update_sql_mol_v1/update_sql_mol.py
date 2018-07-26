@@ -4,7 +4,8 @@ import mysql.connector as mariadb
 def main():
 
     mariadb_connection, cursor = connect('root', 'Buchwa1dr0ck5', 'test1')
-    search_empty_smile(cursor, 'limit 10')
+    # search_empty_smile(cursor, 'limit 10')
+    search_empty_smile(cursor)
     mariadb_connection.close()
 
 def connect(username, pw, database):
@@ -15,10 +16,12 @@ def connect(username, pw, database):
     return mariadb_connection, cursor
 
 def search_empty_smile(cursor, limit=''):
-    cursor.execute("SELECT cas_nr, molecule_id, smiles, molfile_blob FROM molecule where smiles='' {}".format(limit))
+    # cursor.execute("SELECT cas_nr, molecule_id, smiles, molfile_blob FROM molecule where smiles='' {}".format(limit))
+    missing_structure_cas_list = list(cursor.execute("SELECT cas_nr FROM molecule where smiles='' {}".format(limit)))
 
-    for row in cursor:
-        print('CAS# {}: {}'.format(row[0], row))
+    # for row in cursor:
+    #     print('CAS# {}: {}'.format(row[0], row))
+    print(len(missing_structure_cas_list))
 
 if __name__ == '__main__':
     main()
