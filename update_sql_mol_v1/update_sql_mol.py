@@ -17,7 +17,7 @@ def connect(username, pw, database):
 
 def search_empty_smile(cursor, limit=''):
     # cursor.execute("SELECT cas_nr, molecule_id, smiles, molfile_blob FROM molecule where smiles='' {}".format(limit))
-    missing_structure_cas_list = list(cursor.execute("SELECT cas_nr FROM molecule where smiles='' {}".format(limit)))
+    missing_structure_cas_list = cursor.execute("SELECT cas_nr FROM molecule where smiles='' {}".format(limit))
 
     # for row in cursor:
     #     print('CAS# {}: {}'.format(row[0], row))
