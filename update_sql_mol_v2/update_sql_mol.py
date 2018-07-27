@@ -3,13 +3,12 @@ import mysql.connector as mariadb
 from pathlib import Path
 
 import requests
-# import sys
 import wget
 from pathlib import Path
-# import csv
 from multiprocessing import Pool
+from functools import partial
 
-missing_mol_file = []
+missing_mol_file = set()
 download_path = '/var/lib/mysql/missing_mol_files/'
 
 def main():
@@ -20,43 +19,48 @@ def main():
     mariadb_connection = mariadb.connect(user='root', password='Buchwa1dr0ck5', database='test1')
 
     cursor_select = mariadb_connection.cursor(buffered=True)
-    cursor_update = mariadb_connection.cursor(buffered=True)
 
     # query = ("SELECT cas_nr FROM molecule WHERE smiles='' limit 1")
-    query = ("SELECT cas_nr FROM molecule WHERE smiles=''")
-    insert_mol_file = (
-        "UPDATE molecule SET molfile_blob=LOAD_FILE(\'%s\') "
-        " WHERE cas_nr=\'%s\'")
-
-  #   insert_new_salary = (
-  # "INSERT INTO salaries (emp_no, from_date, to_date, salary) "
-  # "VALUES (%s, %s, %s, %s)")
-
+    query = ("SELECT distinct cas_nr FROM molecule WHERE smiles=''")
     cursor_select.execute(query)
+
+    to_be_downloaded = []
     for (cas_nr, ) in cursor_select:
-        print('CAS# {}'.format(cas_nr))
-        # print('CAS#: {}; molfile: {}'.format(cas_nr, molfile_blob))
-        # print(insert_mol_file, (str(cas_nr), str(cas_nr)))
-        # print('/var/lib/mysql/missing_mol_files/{}.mol'.format(cas_nr))
-        mol_file = Path(download_path + '{}.mol'.format(cas_nr))
-        # print(mol_file)
+        to_be_downloaded.append(cas_nr)
+    # print('There are {} molecules missing structure'.format(len(to_be_downloaded)))
 
-        result = extracting_mol(cas_nr)
-        # if molfile exists or downloaded (extracting_mol return -1 or 0)
-        if result == -1 or result == 0:
-            # cursor_update.execute(insert_mol_file, (mol_file, cas_nr))
-            # cursor_update.execute("UPDATE molecule SET molfile_blob=LOAD_FILE('/var/lib/mysql/missing_mol_files/{}.mol') WHERE cas_nr='{}'".format(cas_nr, cas_nr))
-            cursor_update.execute("UPDATE molecule SET molfile_blob=LOAD_FILE('{}') WHERE cas_nr='{}'".format(mol_file, cas_nr))
-            mariadb_connection.commit()
-            print('\n\tmol file uploaded successfully!')
-        # extracting_mol return the cas# of those that it could not find mol file
-        else:
-            missing_mol_file.append(result)
+    try:
+        with Pool(10) as p:
+            p.map(extracting_mol, to_be_downloaded)
+            # missing_mol_file.append([x for x in record if x is not None])
 
-    print('\nThese mol files are missing: ' + missing_mol_file)
-            # print('CAS#: {}; molfile: {}'.format(cas_nr, molfile_blob))
+    finally:
+    # func = partial(update_sql, mariadb_connection)
+        for cas in to_be_downloaded:
+            update_sql(mariadb_connection, cas)
 
     mariadb_connection.close()
+    print('\n{} mol files are missing: '.format(len(missing_mol_file)))
+    print(missing_mol_file)
+
+def update_sql(mariadb_connection, cas_nr):
+    global download_path
+    cursor_update = mariadb_connection.cursor(buffered=True)
+    print('CAS# {}'.format(cas_nr))
+    mol_file = Path(download_path + '{}.mol'.format(cas_nr))
+    # print(mol_file)
+
+    # result = extracting_mol(cas_nr)
+    # if molfile exists or downloaded (extracting_mol return -1 or 0)
+    if mol_file.exists():
+        # cursor_update.execute(insert_mol_file, (mol_file, cas_nr))
+        cursor_update.execute("UPDATE molecule SET molfile_blob=LOAD_FILE('{}') WHERE cas_nr='{}'".format(mol_file, cas_nr))
+        mariadb_connection.commit()
+        print('\n\tmol file uploaded successfully!')
+    # extracting_mol return the cas# of those that it could not find mol file
+    else:
+        missing_mol_file.add(cas_nr)
+
 
 def some_func():
     try:
@@ -101,7 +105,7 @@ def extracting_mol(cas_nr):
     # Check if the file not exists and download
     #check file exists: https://stackoverflow.com/questions/82831/how-do-i-check-whether-a-file-exists
     if download_file.exists():
-        print('{} already downloaded'.format(file_name))
+        # print('{} already downloaded'.format(file_name))
         return -1
     else:
         # check if the mol find exist. requests.get().history would show code
