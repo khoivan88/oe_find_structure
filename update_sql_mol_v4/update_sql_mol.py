@@ -80,7 +80,8 @@ def main():
         # Step1: run SELECT query to find CAS#
         print('Getting molecule with missing structures. Please wait!')
         # query = ("SELECT distinct cas_nr FROM molecule WHERE smiles='' and cas_nr!=''")
-        query = ("SELECT distinct cas_nr FROM molecule WHERE cas_nr!='' and molfile_blob like '%open enventory%'")
+        #query = ("SELECT distinct cas_nr FROM molecule WHERE cas_nr!='' and molfile_blob like '%open enventory%'")
+        query = ("SELECT distinct cas_nr FROM molecule WHERE cas_nr!='' and smiles=''")
         try:
             cursor_select.execute(query)
         except mariadb.Error as error:
@@ -186,7 +187,7 @@ def extracting_mol(cas_nr):
         # ChemicalBook automatically redirect if could not find mol file
         redirected = False;
         try:
-            hist_len = len(requests.get(full_url, headers=headers, timeout=20).history)
+            hist_len = len(requests.get(full_url, headers=headers, timeout=15).history)
             if hist_len > 0:
                 redirected = True
         except Exception as error:
