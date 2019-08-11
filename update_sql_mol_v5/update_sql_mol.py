@@ -149,7 +149,7 @@ def update_sql(mariadb_connection, cas_nr):
     if mol_file.exists():
         print('CAS# {}'.format(cas_nr), end='')
         # cursor_update.execute(insert_mol_file, (file_path, cas_nr))
-        cursor_update.execute("UPDATE molecule SET molfile_blob=LOAD_FILE('{}') WHERE cas_nr='{}'".format(file_path, cas_nr))
+        cursor_update.execute("UPDATE molecule SET molfile_blob=LOAD_FILE('{}') WHERE cas_nr='{}'".format(mol_file, cas_nr))
         mariadb_connection.commit()
         print('\tmol file uploaded successfully!')
         return 1
