@@ -23,6 +23,10 @@ Version 4: changing note:
     - Added handling database connection error (wrong password, wrong database)
     - Added confirmation for database
 
+Version 5: changing note:
+    - Change to https (from http) for ChemicalBook site
+
+
 """
 
 
