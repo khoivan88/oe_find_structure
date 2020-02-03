@@ -22,19 +22,26 @@ with 'mysql' as ownner (chown mysql:mysql)
 
 - root access to the server hosting Open Enventory
 - Python 3+
-- This file is made for Linux environment, you should be able
-  to used it on other OS with changing the location of the "download_path"
+- conda (Optional)
+  - conda is used to install `rdkit` and `molvs` to clean mol files (e.g. convert explicit hydrogens to implicit hydrogens, etc.)
+  - If you don't already have conda, you can install it using the following [link](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html). If you are not sure what to install, I suggest you install `miniconda3` and **NOT** `anaconda3` for much smaller package footprint.
+- This file is made for **Linux** environment, you should be able
+  to used it on other OS by changing the location of the ["download_path"](update_sql_mol_v7/update_sql_mol.py#L88)
+
 
 
 ## USAGE
 
 After cloning this repo onto the Open Enventory server:
 
-1. Change into directory of the new file:
+1. Change into the directory of the program:
    
    ```bash
    cd update_sql_mol
    ```
+
+#### Without conda installed:
+   Skip ahead to [this](#with-conda-installed) if you have conda installed.
 
 2. (Optional): create virtual environment for python to install dependency:
    
@@ -43,27 +50,20 @@ After cloning this repo onto the Open Enventory server:
    python3 -m venv update_sql_mol_venv   # Create virtual environment
    source update_sql_mol_venv/bin/activate    # Activate the virtual environment
    ```
-  
-   if you have **conda**, you can create conda virtual environment with:
-
-   ```bash
-   conda create --prefix update_sql_mol_conda-env    # Create virtual environment
-   conda activate ./update_sql_mol_conda-env    # Activate the virtual environment
-   ```
 
 3. Install python dependencies:
    
    ```bash
-   pip install -r requirements.txt
+   pip install -r requirements.txt   # Install all dependencies (without rdkit and molvs)
    ```
 
-   if you have used **conda** in step 2 above, you want to do this instead:
+#### With conda installed:
+
+   Instead of **step 2 AND step 3** above, if you have conda installed, you can do this instead:
    ```bash
-   conda install pip -y    # Add pip
-   pip install -r requirements.txt    # Install pypi packages
-   conda install -c conda-forge molvs -y    # (Optional, for cleaning up mol files) Install molvs using conda, it will automatically install rdkit
+   conda env create --prefix update_sql_mol_conda-env --file ./environment.yml    # Create virtual  environment with conda and install all dependancies
+   conda activate ./update_sql_mol_conda-env    # Activate the virtual environment
    ```
-
 
 4. Run the program:
    

@@ -1,0 +1,11 @@
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python
+  - molvs
+  - pubchempy
+  - mysql-connector-python
+  - requests
+  - python-wget
+
