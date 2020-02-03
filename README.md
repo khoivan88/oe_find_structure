@@ -43,6 +43,13 @@ After cloning this repo onto the Open Enventory server:
    python3 -m venv update_sql_mol_venv   # Create virtual environment
    source update_sql_mol_venv/bin/activate    # Activate the virtual environment
    ```
+  
+   if you have **conda**, you can create conda virtual environment with:
+
+   ```bash
+   conda create --prefix update_sql_mol_conda-env    # Create virtual environment
+   conda activate ./update_sql_mol_conda-env    # Activate the virtual environment
+   ```
 
 3. Install python dependencies:
    
@@ -50,10 +57,18 @@ After cloning this repo onto the Open Enventory server:
    pip install -r requirements.txt
    ```
 
+   if you have used **conda** in step 2 above, you want to do this instead:
+   ```bash
+   conda install pip -y    # Add pip
+   pip install -r requirements.txt    # Install pypi packages
+   conda install -c conda-forge molvs -y    # (Optional, for cleaning up mol files) Install molvs using conda, it will automatically install rdkit
+   ```
+
+
 4. Run the program:
    
    ```bash
-   python3 update_sql_mol_v6/update_sql_mol.py    # Replace "update_sql_mol_v6" with latest version
+   python update_sql_mol_v7/update_sql_mol.py    # Replace "update_sql_mol_v6" with latest version
    ```
 
    - Answer questions for:
