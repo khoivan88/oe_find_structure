@@ -24,7 +24,7 @@ with 'mysql' as ownner (chown mysql:mysql)
 - Python 3+
 - conda (Optional)
   - conda is used to install `rdkit` and `molvs` to clean mol files (e.g. convert explicit hydrogens to implicit hydrogens, etc.)
-  - If you don't already have conda, you can install it using the following [link](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html). If you are not sure what to install, I suggest you install `miniconda3` and **NOT** `anaconda3` for much smaller package footprint.
+  - If you don't already have conda, you can install it using the following <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html" target="_blank">link</a>. If you are not sure what to install, I suggest you install `miniconda3` and **NOT** `anaconda3` for much smaller package footprint.
 - This file is made for **Linux** environment, you should be able
   to used it on other OS by changing the location of the ["download_path"](update_sql_mol_v7/update_sql_mol.py#L88)
 
@@ -60,6 +60,7 @@ After cloning this repo onto the Open Enventory server:
 #### With conda installed:
 
    Instead of **step 2 AND step 3** above, if you have conda installed, you can do this instead:
+
    ```bash
    conda env create --prefix update_sql_mol_conda-env --file ./environment.yml    # Create virtual  environment with conda and install all dependancies
    conda activate ./update_sql_mol_conda-env    # Activate the virtual environment
