@@ -1,3 +1,4 @@
+[![Python 3](https://pyup.io/repos/github/khoivan88/update_sql_mol/python-3-shield.svg)](https://pyup.io/repos/github/khoivan88/update_sql_mol/)
 
 # FIND MISSING STRUCTURE FOR CHEMICALS IN OPEN ENVENTORY
 
