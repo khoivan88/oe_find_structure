@@ -76,11 +76,15 @@ with 'mysql' as ownner (chown mysql:mysql)
 5. Run the program:
    
    ```bash
-   python oe_find_structure/find_structure.py   
+   python oe_find_structure/find_structure.py
    ```
 
    - Answer questions for:
-     - confirming running under root
      - mySQL root password (typing password will not be shown on screen)
      - the name of the database you want to update (twice to confirm)
      - url path for your Open Enventory server (including 'http/https' and no trailing '/')
+
+   You can enable debug mode (more error printing during structure search) by adding '`-d`' :
+   ```bash
+   python oe_find_structure/find_structure.py -d    # Enable debug mode
+   ```

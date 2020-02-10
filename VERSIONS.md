@@ -34,3 +34,5 @@ using a web browser and doing Batch Processing.
 - Add searching for SD File (similar to mol file) from pubchem: https://pubchem.ncbi.nlm.nih.gov/
 - Add function to clean mol file (e.g: remove explicit hydrogens, etc.). User needs to have rdkit and molvs libraries installed first. Suggest install these libraries using conda. If these libraries are not found, this program will skip this function and use the mol files as is.
 - Run looking for mol files function twice. The first time with Pool(20) to take advantage of multiple threads for sites without request limit. The second time, set to 'Pool()' to take advantage of Pubchem, a large collection but has limited (no more than 5 requests per second) request rate.
+- Reduce error output and add debug mode (print more error)
+

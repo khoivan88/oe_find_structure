@@ -57,6 +57,7 @@ Version 7:
     to take advantage of multiple threads for sites without request limit.
     The second time, set to 'Pool()' to take advantage of Pubchem, a large 
     collection but has limited (no more than 5 requests per second) request rate.
+    - Reduce error output and add debug mode (print more error)
 """
 
 import getpass
@@ -83,16 +84,19 @@ if lib_found:
 
 missing_mol_file = set()
 download_path = '/var/lib/mysql/missing_mol_files'
-
+debug = False
 
 def main():
-    global download_path
+    global download_path, debug
 
-    # Require user running this python as root
-    if_root = input('Are you login as root user? (y/n): ')
-    if (if_root not in ['y', 'yes']):
-        print('You need to convert to root user before running this program')
-        exit(1)
+    if len(sys.argv) == 2 and sys.argv[1] in ['--debug=True', '--debug=true', '--debug', '-d']:
+        debug = True
+
+    # # Require user running this python as root (as of 2020-02-10: this does not seem true anymore)
+    # if_root = input('Are you login as root user? (y/n): ')
+    # if (if_root not in ['y', 'yes']):
+    #     print('You need to convert to root user before running this program')
+    #     exit(1)
 
     # Get user input for root password and the database needs to be updated
     # to hide password input: https://stackoverflow.com/questions/9202224/getting-command-line-password-input-in-python
@@ -199,7 +203,6 @@ def main():
             # file_count = len(files)
             print('\t{} mol files updated! '.format(count_file_updated))
 
-
             '''-----Step 4: Use OE Batch Processing to generate image for structure-----'''
             # Login into OE and use Batch Processing to generate structure images
             oe_url_path = 'http://localhost' if oe_url_path_input == '' else oe_url_path_input
@@ -216,6 +219,10 @@ def main():
                 unfound_lib_string = ("rdkit and molvs libraries not found. " 
                     "mol files are used as is!")
                 print(unfound_lib_string)
+
+            # Advice user about turning on debug mode for more error printing
+            print('\n\n(Optional): you can turn on debug mode (more error printing during structure search) using the following command:')
+            print('python oe_find_structure/find_structure.py  --debug')
 
     except mariadb.Error as err:
         if err.errno == mariadb.errorcode.ER_ACCESS_DENIED_ERROR:
@@ -252,7 +259,9 @@ def update_sql(mariadb_connection, cas_nr):
 
 
 def extract_mol(cas_nr):
-    print('Looking for {} ...'.format(cas_nr))
+    global debug
+
+    print('\nLooking for {} ...'.format(cas_nr))
 
     '''Assume mol file existed until exhaust all searches'''
     mol_file_existed = True
@@ -263,15 +272,18 @@ def extract_mol(cas_nr):
     chemicalbook_result = extract_mol_from_chemicalbook(cas_nr)
     '''cas# (string) is return if mol file cannot be found'''
     if isinstance(chemicalbook_result, str):
-        # print('CAS {} not found from chemicalbook.com. Trying cactus now.'.format(cas_nr))
+        if debug:
+            print('CAS {} not found from chemicalbook.com. Trying cactus now.'.format(cas_nr))
         '''Find mol file from cactus'''
         cactus_result = extract_mol_from_cactus(cas_nr)
         if isinstance(cactus_result, str):
-            # print('CAS {} not found from cactus service. '.format(cas_nr))
+            if debug:
+                print('CAS {} not found from cactus service. '.format(cas_nr))
             '''Find mol file from pubchem'''
             pubchem_result = extract_mol_from_pubchem(cas_nr)
             if isinstance(pubchem_result, str):
-                # print('CAS {} not found from PubChem service. '.format(cas_nr))
+                if debug:
+                    print('CAS {} not found from PubChem service. '.format(cas_nr))
                 '''Exhaust all search so change mol_file_existed to False'''
                 mol_file_existed = False
                 '''set still_missing_cas'''
@@ -294,8 +306,8 @@ def extract_mol(cas_nr):
                 return 0
 
         except Exception as error:
-            # print('\nCleaning mol file for {}'.format(download_file))
-            print('\tError for {}: {}\n'.format(cas_nr, error))
+            if debug:
+                print('\tError for {}: {}\n'.format(cas_nr, error))
             # return cas_nr
 
     '''Return still_missing_cas if exist'''
@@ -396,7 +408,8 @@ def extract_mol_from_chemicalbook(cas_nr):
             return cas
 
         except Exception as error:
-            print(error)
+            if debug:
+                print('Error during search structure in chemicalbook.com:\n{}'.format(error))
             return cas
 
 
@@ -442,7 +455,8 @@ def extract_mol_from_cactus(cas_nr):
             return cas_nr
 
         except Exception as error:
-            print(error)
+            if debug:
+                print('Error during search structure in NIH Chemical Identifier Resolver:\n{}'.format(error))
             return cas_nr
 
 
@@ -566,7 +580,8 @@ def extract_mol_from_pubchem(cas_nr):
 
     except Exception as error:
         # print('.', end='')
-        print('\t{}'.format(error))
+        if debug:
+            print('Error during search structure in Pubchem:\n\t{}'.format(error))
         return cas_nr
 
 
