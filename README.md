@@ -1,4 +1,5 @@
-[![Python 3](https://pyup.io/repos/github/khoivan88/update_sql_mol/python-3-shield.svg)](https://pyup.io/repos/github/khoivan88/update_sql_mol/)
+[![Python 3](https://pyup.io/repos/github/khoivan88/oe_find_structure/python-3-shield.svg)](https://pyup.io/repos/github/khoivan88/oe_find_structure/)
+[![Updates](https://pyup.io/repos/github/khoivan88/oe_find_structure/shield.svg)](https://pyup.io/repos/github/khoivan88/oe_find_structure/)
 
 # FIND MISSING STRUCTURE FOR CHEMICALS IN OPEN ENVENTORY
 
@@ -75,7 +76,7 @@ with 'mysql' as ownner (chown mysql:mysql)
 5. Run the program:
    
    ```bash
-   python oe_find_structure/find_structure.py    # Replace "update_sql_mol_v6" with latest version
+   python oe_find_structure/find_structure.py   
    ```
 
    - Answer questions for:
