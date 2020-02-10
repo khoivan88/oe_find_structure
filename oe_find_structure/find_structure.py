@@ -59,10 +59,7 @@ Version 7:
     collection but has limited (no more than 5 requests per second) request rate.
 """
 
-# from functools import partial
 import getpass
-# from bs4 import BeautifulSoup
-# Check if rkdit and molvs libraries are available
 import importlib
 import itertools
 import os
@@ -76,8 +73,8 @@ from pathlib import Path
 import mysql.connector as mariadb
 import pubchempy as pcp  # https://pubchempy.readthedocs.io/en/latest/guide/gettingstarted.html
 import requests
-import wget
 
+# Check if rkdit and molvs libraries are available
 rdkit_spec = importlib.util.find_spec("rdkit")
 molvs_spec = importlib.util.find_spec("molvs")
 lib_found = (rdkit_spec is not None) and (molvs_spec is not None)
@@ -157,20 +154,20 @@ def main():
             Reason: Pubchem blocks access if there are more than 5 request per seconds
             '''
             with Pool(20) as p:
-                still_missing_first_round = p.map(extracting_mol, to_be_downloaded)
-                # 'still_missing_list' is a list of the return value from extracting_mol().
+                still_missing_first_round = p.map(extract_mol, to_be_downloaded)
+                # 'still_missing_list' is a list of the return value from extract_mol().
                 # This function return CAS (string) of chemicals whose mol file cannot be found
             
             still_missing_first_round = [x for x in still_missing_first_round if x]
             # print('Still missing chemicals after first round: {}'.format(still_missing_first_round))
 
-            '''Run the extracting_mol() the second time with Pool() to be 
+            '''Run the extract_mol() the second time with Pool() to be 
             able to take advantage of Pubchem service. Pubchem has a large collection.
             However, Pubchem API has a limit of not more than 5 request per seconds'''
             time.sleep(3)
             with Pool() as p:
-                still_missing_second_round = p.map(extracting_mol, still_missing_first_round)
-                # 'still_missing_list' is a list of the return value from extracting_mol().
+                still_missing_second_round = p.map(extract_mol, still_missing_first_round)
+                # 'still_missing_list' is a list of the return value from extract_mol().
                 # This function return CAS (string) of chemicals whose mol file cannot be found
 
             still_missing_second_round = [x for x in still_missing_second_round if x]
@@ -238,8 +235,8 @@ def update_sql(mariadb_connection, cas_nr):
     mol_file = Path(file_path)
     # print(mol_file)
 
-    # result = extracting_mol(cas_nr)
-    # if molfile exists or downloaded (extracting_mol return -1 or 0)
+    # result = extract_mol(cas_nr)
+    # if molfile exists or downloaded (extract_mol return -1 or 0)
     if mol_file.exists():
         print('CAS# {:<15}: '.format(cas_nr), end='')
         # cursor_update.execute(insert_mol_file, (file_path, cas_nr))
@@ -248,13 +245,13 @@ def update_sql(mariadb_connection, cas_nr):
         print('mol file uploaded successfully!')
         return 1
     
-    # extracting_mol return the cas# of those that it could not find mol file
+    # extract_mol return the cas# of those that it could not find mol file
     else:
         missing_mol_file.add(cas_nr)
         return 0
 
 
-def extracting_mol(cas_nr):
+def extract_mol(cas_nr):
     print('Looking for {} ...'.format(cas_nr))
 
     '''Assume mol file existed until exhaust all searches'''
@@ -263,16 +260,16 @@ def extracting_mol(cas_nr):
     still_missing_cas = ''
 
     '''Find mol file from chemicalbook'''
-    chemicalbook_result = extracting_mol_from_chemicalbook(cas_nr)
+    chemicalbook_result = extract_mol_from_chemicalbook(cas_nr)
     '''cas# (string) is return if mol file cannot be found'''
     if isinstance(chemicalbook_result, str):
         # print('CAS {} not found from chemicalbook.com. Trying cactus now.'.format(cas_nr))
         '''Find mol file from cactus'''
-        cactus_result = extracting_mol_from_cactus(cas_nr)
+        cactus_result = extract_mol_from_cactus(cas_nr)
         if isinstance(cactus_result, str):
             # print('CAS {} not found from cactus service. '.format(cas_nr))
             '''Find mol file from pubchem'''
-            pubchem_result = extracting_mol_from_pubchem(cas_nr)
+            pubchem_result = extract_mol_from_pubchem(cas_nr)
             if isinstance(pubchem_result, str):
                 # print('CAS {} not found from PubChem service. '.format(cas_nr))
                 '''Exhaust all search so change mol_file_existed to False'''
@@ -290,13 +287,16 @@ def extracting_mol(cas_nr):
         download_file = Path(download_path) / file_name
         try:
             '''Clean up mol file'''
-            if download_file.exists():
+            if download_file.exists() and os.stat(download_file).st_size != 0:
+                # print(download_file) 
                 # print('Cleaning mol file for {}'.format(download_file))
                 standardize_mol(mol_file=download_file)
+                return 0
 
         except Exception as error:
-            print('\nCleaning mol file for {}'.format(download_file))
-            print('\tError: {}\n'.format(error))
+            # print('\nCleaning mol file for {}'.format(download_file))
+            print('\tError for {}: {}\n'.format(cas_nr, error))
+            # return cas_nr
 
     '''Return still_missing_cas if exist'''
     # if still_missing_cas is not None and still_missing_cas != '':
@@ -304,7 +304,7 @@ def extracting_mol(cas_nr):
         return still_missing_cas
 
 
-def extracting_mol_from_chemicalbook(cas_nr):
+def extract_mol_from_chemicalbook(cas_nr):
     global download_path
     '''
     This function is used to extract a single mol file from chemicalbook.com
@@ -321,11 +321,11 @@ def extracting_mol_from_chemicalbook(cas_nr):
     full_url = url + file_name
 
     # download_path = '/Users/khoivan/Downloads/mol_files/'
-    download_file = Path(download_path + '/' + file_name)
+    download_file = Path(download_path) / file_name
 
     # Check if the file not exists and download
     # check file exists: https://stackoverflow.com/questions/82831/how-do-i-check-whether-a-file-exists
-    if download_file.exists():
+    if download_file.exists() and os.stat(download_file).st_size != 0:
         # print('{} already downloaded'.format(file_name))
         return -1
     else:
@@ -334,34 +334,73 @@ def extracting_mol_from_chemicalbook(cas_nr):
         # ChemicalBook automatically redirect if could not find mol file
         # redirected = False;
         try:
-            hist_len = len(requests.get(full_url, headers=headers, timeout=10).history)
-
-            if hist_len == 0:  # requests.get.history will a list of more than 0 element if redirected
-                print('\tSearching chemicalbook.com...')
-                wget.download(full_url, download_path, bar=wget.bar_thermometer)
-                print()
-
-                file_path = download_path + '/{}.mol'.format(cas_nr)
-                mol_file = Path(file_path)
-
-                # Check if the mol file is a binary string (some error during downloading) or empty mol file:
-                if is_binary_string(open(mol_file, 'rb').read(1024)) or is_empty_mol_file(mol_file):
-                    os.remove(mol_file)    # remove the error mol file
-                    return cas
-
-                return 0
+            result = requests.get(full_url, headers=headers, timeout=10)
+            hist_len = len(result.history)
             
-            else:
-                # return the cas # of the chemical whose mol file cannot be found
-                return cas
+            if result.status_code == 200 and hist_len == 0:  # requests.get.history will a list of more than 0 element if redirected
+                # print(result.text, file=open('test.html', 'w'))
+                download_file.write_text(data=result.text)
+                # Check if the mol file is a binary string (some error during downloading) or empty mol file:
+                if is_binary_string(open(download_file, 'rb').read(1024)) or is_empty_mol_file(download_file):
+                    os.remove(download_file)    # remove the error mol file
+                    return cas_nr
+                else:
+                    return 0
 
+            elif result.status_code == 200 and hist_len > 0:  # requests.get.history will a list of more than 0 element if redirected
+                # print(result.text, file=open('test.html', 'w'))
+                chemicalbook_search_url = 'https://www.chemicalbook.com/Search_EN.aspx?keyword={}'.format(cas_nr)
+                redirect_search = requests.get(chemicalbook_search_url, headers=headers, timeout=10)
+                
+                if redirect_search.status_code == 200 and len(redirect_search.history) == 0:  # requests.get.history will a list of more than 0 element if redirected
+                    mol_file_pattern = re.compile(r'href=\'(.+)\'>Mol file')
+                    mol_file_link_suffix = mol_file_pattern.search(redirect_search.text).group(1)
+                    # print(mol_file_link_suffix)
+
+                    cas_number_pattern = re.compile(r'(?<![\d\w])(\d{2,7}-\d{2}-\d)')
+                    """Explain above regex:
+                        "(?<![\d\w])(\d{2,7}-\d{2}-\d)"
+                        Negative Lookbehind (?<![\d\w])
+                        Assert that the Regex below does not match
+                            Match a single character present in the list below [\d\w]
+                            \d matches a digit (equal to [0-9])
+                            \w matches any word character (equal to [a-zA-Z0-9_])
+                        1st Capturing Group (\d{2,7}-\d{2}-\d)
+                            \d{2,7} matches a digit (equal to [0-9])
+                            {2,7} Quantifier — Matches between 2 and 7 times, as many times as possible, giving back as needed (greedy)
+                            - matches the character - literally (case sensitive)
+                            \d{2} matches a digit (equal to [0-9])
+                            {2} Quantifier — Matches exactly 2 times
+                            - matches the character - literally (case sensitive)
+                            \d matches a digit (equal to [0-9])
+                    """
+                    redirect_search_cas = cas_number_pattern.search(mol_file_link_suffix).group(1)
+                    # print(redirect_search_cas)
+
+                    # Make sure that the result found by chemicalbook redirect search match the input CAS#
+                    if redirect_search_cas == cas_nr:
+                        new_mol_file_url = 'https://www.chemicalbook.com/{}'.format(mol_file_link_suffix)
+                        new_result = requests.get(new_mol_file_url, headers=headers, timeout=10)
+                
+                        if new_result.status_code == 200 and len(new_result.history) == 0:  # requests.get.history will a list of more than 0 element if redirected
+                            # print(new_result.text)
+                            download_file.write_text(data=new_result.text)
+                            # Check if the mol file is a binary string (some error during downloading) or empty mol file:
+                            if is_binary_string(open(download_file, 'rb').read(1024)) or is_empty_mol_file(download_file):
+                                os.remove(download_file)    # remove the error mol file
+                                return cas_nr
+                            else:
+                                return 0
+            
+            # return the cas # of the chemical whose mol file cannot be found
+            return cas
 
         except Exception as error:
             print(error)
             return cas
 
 
-def extracting_mol_from_cactus(cas_nr):
+def extract_mol_from_cactus(cas_nr):
     global download_path
     '''
     This function is used to extract a single mol file
@@ -374,19 +413,21 @@ def extracting_mol_from_cactus(cas_nr):
     # get url from cactuc to download mol file
     url = 'https://cactus.nci.nih.gov/chemical/structure/{}/file?format=sdf'.format(cas_nr)
     file_name = cas_nr + '.mol'
-    download_file = Path(download_path + '/' + file_name)
+    download_file = Path(download_path) / file_name
+    # print(download_file)
 
     # Check if the file not exists and download
     # check file exists: https://stackoverflow.com/questions/82831/how-do-i-check-whether-a-file-exists
-    if download_file.exists():
+    if download_file.exists() and os.stat(download_file).st_size != 0:
         # print('{} already downloaded'.format(file_name))
         return -1
     else:
         try:
             # print('\tSearching Cactus (NIH) service...')
-            result = requests.get(url, headers=headers, timeout=10)
-            hist_len = result.history
+            result = requests.get(url, headers=headers, timeout=30)
+            hist_len = len(result.history)
 
+            # print(result.text)
             if result.status_code == 200 and hist_len == 0:  # requests.get.history will a list of more than 0 element if redirected
                 download_file.write_text(data=result.text)
                 
@@ -396,19 +437,16 @@ def extracting_mol_from_cactus(cas_nr):
                     return cas_nr
 
                 return 0
-            
-            else:
-                # return the cas # of the chemical whose mol file cannot be found
-                return cas_nr
 
+            # return the cas # of the chemical whose mol file cannot be found
+            return cas_nr
 
         except Exception as error:
             print(error)
             return cas_nr
-            # return 1
 
 
-def extracting_mol_from_pubchem(cas_nr):
+def extract_mol_from_pubchem(cas_nr):
     global download_path
     headers = {
         'user-agent': 'Mozilla/5.0 (X11; CentOS; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36'}
@@ -422,33 +460,41 @@ def extracting_mol_from_pubchem(cas_nr):
         cid = pcp.get_cids(cas_nr, 'name')
 
         file_name = cas_nr + '.mol'
-        download_file = Path(download_path + '/' + file_name)
+        download_file = Path(download_path) / file_name
 
-        #  this api return an empty list if it cannot find cas_nr. This is to check if pubchem has this chemical.
-        if len(cid) > 0:
-            # if Pubchem found the result, get the first result of the list
-            cid = cid[0]
-            # print('Compound ID (CID) from PubChem is: {} and type is: {}'.format(cid, type(cid)))
+        # Check if the file not exists and download
+        # check file exists: https://stackoverflow.com/questions/82831/how-do-i-check-whether-a-file-exists
+        if download_file.exists() and os.stat(download_file).st_size != 0:
+            # print('{} already downloaded'.format(file_name))
+            return -1
         
-            # To double check if the CAS number is correct:
-            # using pubchem api, get a list of synonym. The result is a list of dict.
-            # choose the first result and check first 5 values for 'Synonym' key:
-            # synonyms = pcp.get_synonyms(cid)[0]['Synonym'][:7]
-            synonyms = pcp.get_synonyms(cid)[0]['Synonym']
-            # print('List of synonyms is: {}'.format(synonyms)); exit(0)
+        else:
 
-            if cas_nr not in synonyms:
-                raise ValueError('\tThis is not an exact match!')
+            #  this api return an empty list if it cannot find cas_nr. This is to check if pubchem has this chemical.
+            if len(cid) > 0:
+                # if Pubchem found the result, get the first result of the list
+                cid = cid[0]
+                # print('Compound ID (CID) from PubChem is: {} and type is: {}'.format(cid, type(cid)))
+            
+                # To double check if the CAS number is correct:
+                # using pubchem api, get a list of synonym. The result is a list of dict.
+                # choose the first result and check first 5 values for 'Synonym' key:
+                # synonyms = pcp.get_synonyms(cid)[0]['Synonym'][:7]
+                synonyms = pcp.get_synonyms(cid)[0]['Synonym']
+                # print('List of synonyms is: {}'.format(synonyms)); exit(0)
 
-            # get url from Fisher to get url to download sds file
-            get_sdf_url = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{}/sdf'.format(cid)
+                if cas_nr not in synonyms:
+                    raise ValueError('\tThis is not an exact match!')
 
-            # Check if the file not exists and download
-            # check file exists: https://stackoverflow.com/questions/82831/how-do-i-check-whether-a-file-exists
-            if download_file.exists():
-                # print('{} already downloaded'.format(file_name))
-                return -1
-            else:
+                # get url from Fisher to get url to download sds file
+                get_sdf_url = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{}/sdf'.format(cid)
+
+                # # Check if the file not exists and download
+                # # check file exists: https://stackoverflow.com/questions/82831/how-do-i-check-whether-a-file-exists
+                # if download_file.exists():
+                #     # print('{} already downloaded'.format(file_name))
+                #     return -1
+                # else:
 
                 # # Another way to get sdf, from pubchempy ---------------------------------------
                 #     sdf = pcp.get_sdf(cid)
@@ -471,57 +517,52 @@ def extracting_mol_from_pubchem(cas_nr):
                     else:
                         return 0
                 
+            # If not, try to find substances as well
+            elif len(cid) == 0:
+                '''pcp.get_substances(cas_nr, 'name') returns a list of Substances if found: 
+                Ref: https://github.com/mcs07/PubChemPy/blob/e3c4f4a9b6120433e5cc3383464c7a79e9b2b86e/pubchempy.py#L328'''
+                substances = pcp.get_substances(cas_nr, 'name')   
+                # print(sid); exit(0)
+
+                if len(substances) == 0:
+                    # print('nothing here')
+                    raise ValueError('Could not find any compounds or substances with this CAS {} on Pubchem.'.format(cas_nr))
                 else:
-                    # return the cas # of the chemical whose mol file cannot be found
-                    return cas_nr
+                    for substance in substances:
+                        # print('Substance ID (SID) from PubChem is: {} and type is: {}'.format(substance, type(substance)))
 
-        # If not, try to find substances as well
-        elif len(cid) == 0:
-            '''pcp.get_substances(cas_nr, 'name') returns a list of Substances if found: 
-            Ref: https://github.com/mcs07/PubChemPy/blob/e3c4f4a9b6120433e5cc3383464c7a79e9b2b86e/pubchempy.py#L328'''
-            substances = pcp.get_substances(cas_nr, 'name')   
-            # print(sid); exit(0)
+                        '''Ref: https://github.com/mcs07/PubChemPy/blob/e3c4f4a9b6120433e5cc3383464c7a79e9b2b86e/pubchempy.py#L735'''
+                        # substance_synonyms = substance.to_dict(properties=['synonyms'])['synonyms']
+                        '''
+                        substance.to_dict(properties=['synonyms']) return example:
+                        {'synonyms': ['12259-21-1', 'Iron oxide (Fe2O3), hydrate', 'Ferric oxide hydrate', 
+                                        'Ferrox', 'Hydrated ferric oxide', 'Hydrous ferric oxide', 
+                                        'Iron oxide (Fe203), hydrate']}
+                        '''
+                        
+                        substance_synonyms = substance.synonyms   # https://github.com/mcs07/PubChemPy/blob/e3c4f4a9b6120433e5cc3383464c7a79e9b2b86e/pubchempy.py#L1095
+                        '''
+                        substance.synonyms' return example:
+                            ['12259-21-1', 'Iron oxide (Fe2O3), hydrate', 'Ferric oxide hydrate', 
+                            'Ferrox', 'Hydrated ferric oxide', 'Hydrous ferric oxide', 
+                            'Iron oxide (Fe203), hydrate']
+                        '''
 
-            if len(substances) == 0:
-                # print('nothing here')
-                raise ValueError('Could not find any compounds or substances with this CAS {} on Pubchem.'.format(cas_nr))
-            else:
-                for substance in substances:
-                    # print('Substance ID (SID) from PubChem is: {} and type is: {}'.format(substance, type(substance)))
+                        # Check to make sure the substance has the same CAS#
+                        if cas_nr in substance_synonyms:
+                            sdf = pcp.get_sdf(identifier=substance.sid, namespace='sid', domain='substance')
+                            # print(sdf)
+                            if sdf:    # pcp.get_sdf return None if not found SDF                               
+                                download_file.write_text(data=sdf)
+                                
+                                # Check if the mol file is a binary string (some error during downloading) or empty mol file:
+                                if is_binary_string(open(download_file, 'rb').read(1024)) or is_empty_mol_file(download_file):
+                                    os.remove(download_file)    # remove the error mol file
+                                else:
+                                    return 0
 
-                    '''Ref: https://github.com/mcs07/PubChemPy/blob/e3c4f4a9b6120433e5cc3383464c7a79e9b2b86e/pubchempy.py#L735'''
-                    # substance_synonyms = substance.to_dict(properties=['synonyms'])['synonyms']
-                    '''
-                    substance.to_dict(properties=['synonyms']) return example:
-                    {'synonyms': ['12259-21-1', 'Iron oxide (Fe2O3), hydrate', 'Ferric oxide hydrate', 
-                                    'Ferrox', 'Hydrated ferric oxide', 'Hydrous ferric oxide', 
-                                    'Iron oxide (Fe203), hydrate']}
-                    '''
-                    
-                    substance_synonyms = substance.synonyms   # https://github.com/mcs07/PubChemPy/blob/e3c4f4a9b6120433e5cc3383464c7a79e9b2b86e/pubchempy.py#L1095
-                    '''
-                    substance.synonyms' return example:
-                        ['12259-21-1', 'Iron oxide (Fe2O3), hydrate', 'Ferric oxide hydrate', 
-                        'Ferrox', 'Hydrated ferric oxide', 'Hydrous ferric oxide', 
-                        'Iron oxide (Fe203), hydrate']
-                    '''
-
-                    # Check to make sure the substance has the same CAS#
-                    if cas_nr in substance_synonyms:
-                        sdf = pcp.get_sdf(identifier=substance.sid, namespace='sid', domain='substance')
-                        # print(sdf)
-                        if sdf:    # pcp.get_sdf return None if not found SDF
-                            download_file.write_text(data=sdf)
-                            
-                            # Check if the mol file is a binary string (some error during downloading) or empty mol file:
-                            if is_binary_string(open(download_file, 'rb').read(1024)) or is_empty_mol_file(download_file):
-                                os.remove(download_file)    # remove the error mol file
-                                # continue
-                            else:
-                                return 0
-
-                # If none of the Substances has the same CAS and/or has SDF (mol) file, then return the CAS #
-                return cas_nr
+            # If none of the Substances has the same CAS and/or has SDF (mol) file, then return the CAS #
+            return cas_nr
 
     except Exception as error:
         # print('.', end='')
@@ -687,6 +728,14 @@ def is_empty_mol_file(mol_file):
             M  END
         '
     '''
+
+    # '''Case 1: file contains just blank lines'''
+    content = open(mol_file, 'r').read()
+    # print(content)
+    if re.search(r'^\s*$', content):
+        return True
+
+    '''Case 2: file contains blank mol file'''
     pattern = re.compile(r'^(?:\s*0)+\s*999 V2000$')
     with open(mol_file, 'r') as f:
         for line in f.readlines():
@@ -698,7 +747,3 @@ def is_empty_mol_file(mol_file):
 
 if __name__ == '__main__':
     main()
-
-    # extracting_mol_from_pubchem('159857-81-5')   # this chemicals can be found as compound in Pubchem
-    # extracting_mol_from_pubchem('12259-21-1')    # this chemicals can only be found as substance (not compound) in Pubchem
-    # extracting_mol_from_pubchem('0000-00-0')   # testing for error 

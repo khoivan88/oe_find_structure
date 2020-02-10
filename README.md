@@ -14,7 +14,7 @@ of specific database and find those molecule with missing structure (smiles)
 2. folder "missing_mol_files" needs to be created inside /var/lib/mysql
 with 'mysql' as ownner (chown mysql:mysql)
 3. Try to download mol files from various sources into a folder in
-     /var/lib/mysql/missing_mol_files
+    `/var/lib/mysql/missing_mol_files`
 4. Update those sql entries with new downloaded mol_files
 
 
@@ -26,32 +26,37 @@ with 'mysql' as ownner (chown mysql:mysql)
   - conda is used to install `rdkit` and `molvs` to clean mol files (e.g. convert explicit hydrogens to implicit hydrogens, etc.)
   - If you don't already have conda, you can install it using the following <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html" target="_blank">link</a>. If you are not sure what to install, I suggest you install `miniconda3` and **NOT** `anaconda3` for much smaller package footprint.
 - This file is made for **Linux** environment, you should be able
-  to used it on other OS by changing the location of the ["download_path"](update_sql_mol_v7/update_sql_mol.py#L88)
-
+  to used it on other OS by changing the location of the ["download_path"](oe_find_structure/find_structure.py#L85)
 
 
 ## USAGE
 
-After cloning this repo onto the Open Enventory server:
-
-1. Change into the directory of the program:
+1. Clone this repository:
    
    ```bash
-   cd update_sql_mol
+   git clone https://github.com/khoivan88/oe_find_structure.git    #if you have git
+   # if you don't have git, you can download the zip file then unzip
+   ```
+
+2. Change into the directory of the program:
+   
+   ```bash
+   cd oe_find_structure
    ```
 
 #### Without conda installed:
    Skip ahead to [this](#with-conda-installed) if you have conda installed.
 
-2. (Optional): create virtual environment for python to install dependency:
+3. (Optional): create virtual environment for python to install dependency:
    
    ```bash
    # you can change "update_sql_mol_venv" to other name too
-   python3 -m venv update_sql_mol_venv   # Create virtual environment
-   source update_sql_mol_venv/bin/activate    # Activate the virtual environment
+   python3 -m venv oe_find_structure_venv   # Create virtual environment
+   source oe_find_structure_venv/bin/activate    # Activate the virtual environment on Linux
+   # oe_find_structure_venv/Scripts/activate    # Activate the virtual environment on Windows
    ```
 
-3. Install python dependencies:
+4. Install python dependencies:
    
    ```bash
    pip install -r requirements.txt   # Install all dependencies (without rdkit and molvs)
@@ -62,14 +67,14 @@ After cloning this repo onto the Open Enventory server:
    Instead of **step 2 AND step 3** above, if you have conda installed, you can do this instead:
 
    ```bash
-   conda env create --prefix update_sql_mol_conda-env --file ./environment.yml    # Create virtual  environment with conda and install all dependancies
-   conda activate ./update_sql_mol_conda-env    # Activate the virtual environment
+   conda env create --prefix oe_find_structure_conda-env --file ./environment.yml    # Create virtual  environment with conda and install all dependancies
+   conda activate ./oe_find_structure_conda-env    # Activate the virtual environment
    ```
 
-4. Run the program:
+5. Run the program:
    
    ```bash
-   python update_sql_mol_v7/update_sql_mol.py    # Replace "update_sql_mol_v6" with latest version
+   python oe_find_structure/find_structure.py    # Replace "update_sql_mol_v6" with latest version
    ```
 
    - Answer questions for:

@@ -7,5 +7,4 @@ dependencies:
   - pubchempy
   - mysql-connector-python
   - requests
-  - python-wget
 
