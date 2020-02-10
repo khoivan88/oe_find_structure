@@ -1,4 +1,4 @@
-name: Python application
+name: Python application with pip
 
 on: [push]
 
@@ -27,4 +27,4 @@ jobs:
     - name: Test with pytest
       run: |
         pip install pytest
-        pytest ./tests --rootdir='oe_find_structure'
+        pytest ./tests --ignore='tests/unit/test_standardize_mol.py'
