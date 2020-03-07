@@ -28,7 +28,7 @@ with 'mysql' as ownner (chown mysql:mysql)
   - conda is used to install `rdkit` and `molvs` to clean mol files (e.g. convert explicit hydrogens to implicit hydrogens, etc.)
   - If you don't already have conda, you can install it using the following <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html" target="_blank">link</a>. If you are not sure what to install, I suggest you install `miniconda3` and **NOT** `anaconda3` for much smaller package footprint.
 - This file is made for **Linux** environment, you should be able
-  to used it on other OS by changing the location of the ["download_path"](oe_find_structure/find_structure.py#L85)
+  to used it on other OS by changing the location of the ["download_path"](oe_find_structure/find_structure.py#L86)
 
 
 ## USAGE
