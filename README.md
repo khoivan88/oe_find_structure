@@ -55,7 +55,7 @@ with 'mysql' as ownner (chown mysql:mysql)
    # you can change "update_sql_mol_venv" to other name too
    python3 -m venv oe_find_structure_venv   # Create virtual environment
    source oe_find_structure_venv/bin/activate    # Activate the virtual environment on Linux
-   # oe_find_structure_venv/Scripts/activate    # Activate the virtual environment on Windows
+   # oe_find_structure_venv\Scripts\activate    # Activate the virtual environment on Windows
    ```
 
 4. Install python dependencies:
@@ -66,7 +66,7 @@ with 'mysql' as ownner (chown mysql:mysql)
 
 #### With conda installed:
 
-   Instead of **step 2 AND step 3** above, if you have conda installed, you can do this instead:
+   Instead of **step 3 AND step 4** above, if you have conda installed, you can do this instead:
 
    ```bash
    conda env create --prefix oe_find_structure_conda-env --file ./environment.yml    # Create virtual  environment with conda and install all dependancies
