@@ -54,6 +54,7 @@ jobs:
       run: |
         conda info
         conda list
+        which python
         
 #     - run: conda --version
 #     - run: which python
@@ -86,11 +87,11 @@ jobs:
 #         restore-keys: |
 #           ${{ runner.os }}-pip-
   
-    - name: Install dependencies with conda
-      if: startsWith(runner.os, 'Linux')
-      run: |
-        # $CONDA is an environment variable pointing to the root of the miniconda directory
-        $CONDA/bin/conda env update --file environment.yml --name base
+#     - name: Install dependencies with conda
+#       if: startsWith(runner.os, 'Linux')
+#       run: |
+#         # $CONDA is an environment variable pointing to the root of the miniconda directory
+#         $CONDA/bin/conda env update --file environment.yml --name base
         
 #     - name: Install dependencies with pip
 #       if: startsWith(runner.os, 'macOS') || startsWith(runner.os, 'Windows')
