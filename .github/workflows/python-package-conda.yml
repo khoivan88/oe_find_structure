@@ -61,7 +61,7 @@ jobs:
         $CONDA/bin/conda env update --file environment.yml --name base
         
     - name: Install dependencies with pip
-      if: startsWith(runner.os, 'macOS') or startsWith(runner.os, 'Windows')
+      if: startsWith(runner.os, 'macOS') || startsWith(runner.os, 'Windows')
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
