@@ -34,7 +34,7 @@ def create_binary_string(tmpdir):
 
         
 def test_binary_string(create_binary_string, tmpdir):
-    file = Path(tmpdir) / 'binary_string')
+    file = Path(tmpdir) / 'binary_string'
     is_binary = is_binary_string(open(file, 'rb').read(1024))
     # Remove file:
     Path.unlink(file)
