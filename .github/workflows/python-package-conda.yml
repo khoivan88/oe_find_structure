@@ -27,14 +27,14 @@ jobs:
 #       with:
 #         python-version: ${{ matrix.python-version }}
 
-    - name: Cache conda
-      uses: actions/cache@v2
-      env:
-        # Increase this value to reset cache if etc/example-environment.yml has not changed
-        CACHE_NUMBER: 0
-      with:
-        path: ~/conda_pkgs_dir
-        key: ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{ hashFiles('./environment.yml') }}
+#     - name: Cache conda
+#       uses: actions/cache@v2
+#       env:
+#         # Increase this value to reset cache if etc/example-environment.yml has not changed
+#         CACHE_NUMBER: 0
+#       with:
+#         path: ~/conda_pkgs_dir
+#         key: ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{ hashFiles('./environment.yml') }}
 
     - uses: conda-incubator/setup-miniconda@v1
       with:
@@ -43,11 +43,11 @@ jobs:
 #         environment-file: environment.yml
 #         activate-environment: anaconda-client-env
 #         channel-priority: strict
-        environment-file: ./environment-caching.yml
-        use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!: activate-environment: anaconda-client-env
+        environment-file: environment-caching.yml
+#         use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!: activate-environment: anaconda-client-env
 
-    - run: conda --version
-    - run: which python
+#     - run: conda --version
+#     - run: which python
 
 #     - name: Display Python version
 #       run: python -c "import sys; print(sys.version)"
