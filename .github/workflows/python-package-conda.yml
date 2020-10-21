@@ -99,7 +99,7 @@ jobs:
     - name: Test with pytest
       run: |
         conda install pytest pytest-cov
-        $CONDA/bin/python -m pytest --cov=./ --cov-report=xml tests
+        $CONDA/bin/pytest --cov=./ --cov-report=xml tests
 
     - name: Upload coverage to codecov.io
       uses: codecov/codecov-action@v1
