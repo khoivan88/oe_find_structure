@@ -1,5 +1,8 @@
 [![Python 3](https://pyup.io/repos/github/khoivan88/oe_find_structure/python-3-shield.svg)](https://pyup.io/repos/github/khoivan88/oe_find_structure/)
 [![Updates](https://pyup.io/repos/github/khoivan88/oe_find_structure/shield.svg)](https://pyup.io/repos/github/khoivan88/oe_find_structure/)
+[![codecov](https://codecov.io/gh/khoivan88/oe_find_structure/branch/master/graph/badge.svg?token=4MB0S9JLXZ)](undefined)
+[![python version](https://img.shields.io/badge/python-v3.6%2B-blue)]()
+
 
 # FIND MISSING STRUCTURE FOR CHEMICALS IN OPEN ENVENTORY
 
