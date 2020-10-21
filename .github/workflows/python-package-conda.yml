@@ -39,13 +39,10 @@ jobs:
 
     - uses: conda-incubator/setup-miniconda@v1
       with:
-#         miniconda-version: "latest"
         auto-activate-base: false
         auto-update-conda: true
         python-version: ${{ matrix.python-version }}
-#         environment-file: environment.yml
         activate-environment: test
-#         channel-priority: strict
         environment-file: environment.yml
 #         use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!: activate-environment: anaconda-client-env
     
@@ -59,8 +56,9 @@ jobs:
 #     - run: conda --version
 #     - run: which python
 
-#     - name: Display Python version
-#       run: python -c "import sys; print(sys.version)"
+    - name: Display Python version
+      shell: bash -l {0}
+      run: python -c "import sys; print(sys.version)"
     
 #     - name: Cache pip Ubuntu
 #       uses: actions/cache@v2
