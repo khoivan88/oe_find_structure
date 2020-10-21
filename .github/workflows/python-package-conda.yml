@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  test:
     # The type of runner that the job will run on
 #     runs-on: ubuntu-latest
     runs-on: ${{ matrix.os }}
@@ -46,13 +46,10 @@ jobs:
 #         channel-priority: strict
         environment-file: environment.yml
 #         use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!: activate-environment: anaconda-client-env
-      
-      - name: Conda info
-        shell: bash -l {0}
-        run: conda info
-      - name: Conda list
-        shell: pwsh
-        run: conda list
+      - shell: bash -l {0}
+        run: |
+          conda info
+          conda list
         
 #     - run: conda --version
 #     - run: which python
