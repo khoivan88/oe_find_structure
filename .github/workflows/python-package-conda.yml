@@ -23,10 +23,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
+#     - name: Set up Python ${{ matrix.python-version }}
+#       uses: actions/setup-python@v2
+#       with:
+#         python-version: ${{ matrix.python-version }}
 
 #     - name: Cache conda
 #       uses: actions/cache@v2
@@ -37,22 +37,23 @@ jobs:
 #         path: ~/conda_pkgs_dir
 #         key: ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{ hashFiles('./environment.yml') }}
 
-#     - uses: conda-incubator/setup-miniconda@v1
-#       with:
-# #         miniconda-version: "latest"
-# #         auto-activate-base: true
-#         auto-update-conda: true
-#         python-version: ${{ matrix.python-version }}
-# #         environment-file: environment.yml
-# #         activate-environment: anaconda-client-env
-# #         channel-priority: strict
+    - uses: conda-incubator/setup-miniconda@v1
+      with:
+#         miniconda-version: "latest"
+        auto-activate-base: false
+        auto-update-conda: true
+        python-version: ${{ matrix.python-version }}
 #         environment-file: environment.yml
-# #         use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!: activate-environment: anaconda-client-env
+        activate-environment: test
+#         channel-priority: strict
+        environment-file: environment.yml
+#         use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!: activate-environment: anaconda-client-env
     
-#     - shell: bash -l {0}
-#       run: |
-#         conda info
-#         conda list
+    - name: Conda info
+      shell: bash -l {0}
+      run: |
+        conda info
+        conda list
         
 #     - run: conda --version
 #     - run: which python
@@ -106,10 +107,10 @@ jobs:
 #         $CONDA/bin/flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     
     - name: Test with pytest
-#       shell: bash -l {0}
+      shell: bash -l {0}
       run: |
         conda install pytest pytest-cov
-        $CONDA/bin/python -m pytest --cov=./ --cov-report=xml tests
+        python -m pytest --cov=./ --cov-report=xml tests
 
 #     - name: Upload coverage to codecov.io
 #       uses: codecov/codecov-action@v1
