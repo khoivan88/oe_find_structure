@@ -40,7 +40,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v1
       with:
         miniconda-version: "latest"
-        activate-environment: base
+        auto-activate-base: true
         auto-update-conda: true
         python-version: ${{ matrix.python-version }}
 #         environment-file: environment.yml
