@@ -39,6 +39,8 @@ jobs:
 
     - uses: conda-incubator/setup-miniconda@v1
       with:
+        miniconda-version: "latest"
+        activate-environment: base
         auto-update-conda: true
         python-version: ${{ matrix.python-version }}
 #         environment-file: environment.yml
@@ -46,10 +48,11 @@ jobs:
 #         channel-priority: strict
         environment-file: environment.yml
 #         use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!: activate-environment: anaconda-client-env
-    - shell: bash -l {0}
-      run: |
-        conda info
-        conda list
+    
+#     - shell: bash -l {0}
+#       run: |
+#         conda info
+#         conda list
         
 #     - run: conda --version
 #     - run: which python
@@ -94,13 +97,14 @@ jobs:
 #         python -m pip install --upgrade pip
 #         pip install -r requirements.txt
     
-    - name: Lint with flake8
-      run: |
-        $CONDA/bin/conda install flake8
-        # stop the build if there are Python syntax errors or undefined names
-        $CONDA/bin/flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        $CONDA/bin/flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+#     - name: Lint with flake8
+#       run: |
+#         $CONDA/bin/conda install flake8
+#         # stop the build if there are Python syntax errors or undefined names
+#         $CONDA/bin/flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+#         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+#         $CONDA/bin/flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    
     - name: Test with pytest
       run: |
         conda install pytest pytest-cov
