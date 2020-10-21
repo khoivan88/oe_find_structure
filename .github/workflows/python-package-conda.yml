@@ -43,7 +43,7 @@ jobs:
 #         environment-file: environment.yml
 #         activate-environment: anaconda-client-env
 #         channel-priority: strict
-        environment-file: environment-caching.yml
+        environment-file: environment.yml
 #         use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!: activate-environment: anaconda-client-env
 
 #     - run: conda --version
